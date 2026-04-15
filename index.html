@@ -330,7 +330,13 @@ svg.chart { width: 100%; height: 210px; display: block; }
 
       <section class="grid-2">
         <section class="panel fade-target" id="detailPanel">
-          <h3 class="subsection-title"><span>条件に合う試合</span><span class="footer-note" id="cohortLabel"></span></h3>
+          <h3 class="subsection-title">
+            <span>条件に合う試合</span>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+              <span class="footer-note" id="cohortLabel"></span>
+              <button class="btn" id="copyCohortTsvBtn" type="button" style="padding:8px 12px;border-radius:12px;">TSVをコピー</button>
+            </div>
+          </h3>
           <div class="table-wrap">
             <table>
               <thead>
@@ -362,7 +368,7 @@ svg.chart { width: 100%; height: 210px; display: block; }
 
     <div id="pagePower" class="page-section panel-stack" hidden>
       <section class="panel">
-        <div class="subsection-title"><span>対戦相手別の集客力判定</span><span class="footer-note">ホーム開催のみ / ヴィッセル神戸=強・ヴェルディ=中で上書き済み</span></div>
+        <div class="subsection-title"><span>対戦相手別の集客力判定</span><span class="footer-note">ホーム開催のみ / ヴィッセル神戸=強・東京ヴェルディ=弱・ヴェルディ川崎=強で上書き済み</span></div>
         <p class="page-lead">相手ごとの判定を一覧で見られます。行を選ぶと、その相手とのホームゲーム一覧を下に出します。</p>
       </section>
       <section class="panel">
@@ -454,8 +460,8 @@ const RAW_DATA = [{"match_no": "45", "match_date": "1993-05-19", "season": 1993,
 
 const OPPONENT_POWER_OVERRIDES = {
   'ヴィッセル神戸': '強',
-  '東京ヴェルディ': '中',
-  'ヴェルディ川崎': '中'
+  '東京ヴェルディ': '弱',
+  'ヴェルディ川崎': '強'
 };
 
 const state = {
@@ -482,6 +488,8 @@ const state = {
   selectedPowerOpponent: '',
   campaignFilter: 'all'
 };
+
+let latestCohortRows = [];
 
 const $ = (id) => document.getElementById(id);
 const uniq = (arr) => [...new Set(arr.filter(v => v !== null && v !== undefined && v !== '' && v !== '不明'))];
@@ -831,6 +839,36 @@ function renderCohortTable(cohort) {
     </tr>`).join('');
 }
 
+function sanitizeTsvCell(value) {
+  return String(value ?? '').replace(/	/g, ' ').replace(/
+?
+/g, ' ');
+}
+
+function buildCohortTsv(rows) {
+  const header = ['ID','日付','曜日区分','相手','相手集客力','会場','観客数','キックオフ','デー/ナイト','キーゲーム','GoGoReds!デー','配布','タグ','メモ'];
+  const body = rows
+    .slice()
+    .sort((a,b)=>b.match_date.localeCompare(a.match_date))
+    .map(r => [
+      r.app_match_id,
+      jpDate(r.match_date),
+      inferredDayType(r),
+      r.opponent_std || '',
+      drawPowerOf(r),
+      r.venue_std || r.venue_category || '',
+      Number.isFinite(Number(r.attendance)) ? Math.round(Number(r.attendance)) : '',
+      r.kickoff_time || '',
+      r.day_night || '',
+      Number(r.key_game_flag) === 1 ? '1' : '0',
+      Number(r.gogoreds_day_flag) === 1 ? '1' : '0',
+      Number(r.distribution_flag) === 1 ? '1' : '0',
+      [Number(r.gogoreds_day_flag)===1?'GoGo':'', Number(r.distribution_flag)===1?'配布':'', Number(r.key_game_flag)===1?'キー':'', r.tags || ''].filter(Boolean).join(' / '),
+      r.distribution_note || ''
+    ].map(sanitizeTsvCell).join('\t'));
+  return [header.join('\t'), ...body].join('\n');
+}
+
 function renderMeeting(target, narratives, similarBundle, cohort) {
   const bullets = [
     `比較対象は${cohort.length}件で、信頼感は「${confidenceLabel(cohort.length)[1]}」。相手集客力は「${drawPowerOf(target)}」。`,
@@ -966,6 +1004,7 @@ function refresh() {
     const pool = applyFilters(historicalPool(target));
     const similarBundle = tierMatches(target, pool);
     const cohort = similarBundle.pick.length ? similarBundle.pick : pool;
+    latestCohortRows = cohort.slice();
     const narratives = buildNarratives(target, cohort, similarBundle);
 
     $('heroTitle').textContent = `${target.opponent_std} 戦の見立て`;
@@ -1121,6 +1160,17 @@ function bind() {
   $('copySummaryBtn').addEventListener('click', async () => {
     const text = $('meetingCopy').textContent;
     try { await navigator.clipboard.writeText(text); $('copySummaryBtn').textContent = 'コピー済み'; setTimeout(()=> $('copySummaryBtn').textContent = '要約をコピー', 1200); } catch(e) { alert('コピーに失敗しました'); }
+  });
+  $('copyCohortTsvBtn').addEventListener('click', async () => {
+    const text = buildCohortTsv(latestCohortRows);
+    if (!latestCohortRows.length) { alert('コピーできる試合がありません'); return; }
+    try {
+      await navigator.clipboard.writeText(text);
+      $('copyCohortTsvBtn').textContent = 'TSVコピー済み';
+      setTimeout(()=> $('copyCohortTsvBtn').textContent = 'TSVをコピー', 1200);
+    } catch(e) {
+      alert('TSVのコピーに失敗しました');
+    }
   });
   $('modeAnalysisBtn').addEventListener('click', () => setMode('analysis'));
   $('modeMeetingBtn').addEventListener('click', () => setMode('meeting'));
