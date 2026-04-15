@@ -4,7 +4,6 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>浦和レッズ ホームゲーム来場分析アプリ</title>
-<link rel="icon" href="data:,">
 <style>
 :root {
   --bg: #f6f7fb;
@@ -180,6 +179,89 @@ svg.chart { width: 100%; height: 210px; display: block; }
   .inline-kpis, .section-grid-2 { grid-template-columns: 1fr; }
 }
 
+
+/* insight enhancements */
+.bar-summary-grid { display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:12px; margin-bottom:12px; }
+.bar-summary-card { border:1px solid var(--line); background:#fff; border-radius:16px; padding:12px 14px; display:grid; gap:4px; }
+.bar-summary-card .eyebrow { font-size:12px; color:var(--muted); }
+.bar-summary-card .value { font-size:24px; font-weight:800; letter-spacing:-.03em; }
+.chart-legend { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:12px; }
+.legend-chip { display:inline-flex; align-items:center; gap:8px; padding:7px 11px; border-radius:999px; font-size:12px; font-weight:700; background:#fff; border:1px solid var(--line); }
+.legend-dot { width:10px; height:10px; border-radius:999px; background:#cbd5e1; }
+.legend-dot.up { background:#198754; }
+.legend-dot.high { background:#2358d4; }
+.legend-dot.down { background:#d71920; }
+.legend-line { width:22px; height:0; border-top:2px dashed #2358d4; }
+.legend-line.secondary { border-top-color:#697283; }
+.cohort-bar-wrap { position:relative; border:1px solid var(--line); background:#fff; border-radius:20px; padding:14px 14px 8px; overflow:hidden; }
+.cohort-bar-scroller { overflow-x:auto; padding-bottom:6px; }
+.cohort-plot { position:relative; min-height:320px; min-width:780px; }
+.cohort-line { position:absolute; left:0; right:0; border-top:2px dashed #2358d4; z-index:1; }
+.cohort-line.secondary { border-top-color:#8c95a7; border-top-style:dotted; }
+.cohort-line span { position:absolute; right:8px; top:-11px; background:rgba(255,255,255,.92); padding:2px 8px; border-radius:999px; font-size:11px; color:var(--muted); border:1px solid var(--line); }
+.cohort-bars { position:absolute; inset:0 0 0 0; display:flex; align-items:flex-end; gap:8px; padding:18px 14px 30px 14px; }
+.cohort-bar { position:relative; border:0; border-radius:12px 12px 8px 8px; min-width:18px; width:18px; cursor:pointer; transition: transform .14s ease, filter .14s ease, outline-color .14s ease; outline:2px solid transparent; }
+.cohort-bar:hover, .cohort-bar.is-active { transform:translateY(-3px); filter:brightness(.98); outline-color:#111827; }
+.cohort-bar.up-strong { background:#198754; }
+.cohort-bar.up { background:#4ea671; }
+.cohort-bar.neutral { background:#9aa4b6; }
+.cohort-bar.down { background:#e05d63; }
+.cohort-bar.down-strong { background:#d71920; }
+.cohort-axis-labels { position:absolute; left:14px; right:14px; bottom:4px; display:flex; gap:8px; }
+.cohort-axis-labels span { width:18px; font-size:10px; color:var(--muted); transform:rotate(-45deg); transform-origin:left top; white-space:nowrap; }
+.cohort-tooltip { position:absolute; z-index:5; min-width:240px; max-width:290px; background:rgba(18,25,38,.96); color:#fff; border-radius:16px; padding:12px 13px; box-shadow:0 18px 40px rgba(0,0,0,.22); pointer-events:none; }
+.cohort-tooltip .small { font-size:12px; line-height:1.55; color:#d7dbea; }
+.chart-empty { border:1px dashed var(--line); border-radius:16px; padding:20px; text-align:center; color:var(--muted); background:#fafbfe; }
+.delta-chip { display:inline-flex; align-items:center; gap:4px; padding:5px 9px; border-radius:999px; font-size:11px; font-weight:800; border:1px solid transparent; }
+.delta-chip.up-strong { background:#e8f7ef; color:#177548; border-color:#ccead8; }
+.delta-chip.up { background:#edf3ff; color:#2855c5; border-color:#d8e4ff; }
+.delta-chip.neutral { background:#f3f5f9; color:#5b6474; border-color:#e3e7ee; }
+.delta-chip.down { background:#fff4dd; color:#8a6a08; border-color:#f1dda6; }
+.delta-chip.down-strong { background:#fdeced; color:#b91319; border-color:#f1c4c7; }
+.table-metric { display:grid; gap:6px; }
+.attendance-bar { position:relative; border-radius:999px; background:#f3f5f9; height:10px; overflow:hidden; }
+.attendance-bar > span { position:absolute; inset:0 auto 0 0; background:linear-gradient(90deg, rgba(35,88,212,.28), rgba(215,25,32,.30)); border-radius:999px; }
+.reason-inline { color:var(--muted); font-size:12px; line-height:1.55; }
+.metric-stack { display:grid; gap:6px; }
+.heatmap-wrap { overflow:auto; }
+.heatmap-table { width:100%; border-collapse:separate; border-spacing:6px; min-width:720px; }
+.heatmap-table th { position:static; background:transparent; border:0; padding:0 6px 4px; text-transform:none; letter-spacing:0; font-size:12px; color:var(--muted); }
+.heatmap-table td { border:0; padding:0; }
+.heatmap-cell { min-width:58px; min-height:54px; border-radius:14px; border:1px solid var(--line); padding:8px; display:grid; align-content:space-between; gap:6px; background:#fff; }
+.heatmap-cell .month-val { font-size:13px; font-weight:800; }
+.heatmap-cell .month-meta { font-size:11px; color:var(--muted); }
+.heatmap-cell.up-strong { background:#e8f7ef; border-color:#ccead8; }
+.heatmap-cell.up { background:#edf3ff; border-color:#d8e4ff; }
+.heatmap-cell.neutral { background:#fff; }
+.heatmap-cell.down { background:#fff4dd; border-color:#f1dda6; }
+.heatmap-cell.down-strong { background:#fdeced; border-color:#f1c4c7; }
+.anomaly-toolbar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+.anomaly-grid { display:grid; gap:12px; grid-template-columns:repeat(2, minmax(0,1fr)); }
+.anomaly-card { border:1px solid var(--line); background:#fff; border-radius:18px; padding:14px; display:grid; gap:8px; }
+.anomaly-card.up-strong { background:linear-gradient(135deg, #f7fffb, #ecf8f2); }
+.anomaly-card.down-strong { background:linear-gradient(135deg, #fff8f8, #fdeeee); }
+.matrix-stack { display:grid; gap:14px; }
+.matrix-card { border:1px solid var(--line); background:#fff; border-radius:18px; padding:14px; }
+.matrix-card h4 { margin:0 0 10px; font-size:14px; }
+.matrix-table { width:100%; border-collapse:separate; border-spacing:6px; min-width:440px; }
+.matrix-table th { position:static; background:transparent; border:0; padding:0 6px 2px; text-transform:none; letter-spacing:0; font-size:12px; color:var(--muted); }
+.matrix-table td { border:0; padding:0; }
+.matrix-cell { border:1px solid var(--line); border-radius:14px; padding:9px 10px; min-height:58px; background:#fff; display:grid; gap:4px; }
+.matrix-cell .main { font-size:13px; font-weight:800; }
+.matrix-cell .sub { font-size:11px; color:var(--muted); }
+.matrix-cell.up-strong { background:#e8f7ef; border-color:#ccead8; }
+.matrix-cell.up { background:#edf3ff; border-color:#d8e4ff; }
+.matrix-cell.down { background:#fff4dd; border-color:#f1dda6; }
+.matrix-cell.down-strong { background:#fdeced; border-color:#f1c4c7; }
+.copy-hint { color:var(--muted); font-size:12px; }
+@media (max-width: 1200px) {
+  .bar-summary-grid, .anomaly-grid { grid-template-columns:1fr 1fr; }
+}
+@media (max-width: 860px) {
+  .bar-summary-grid, .anomaly-grid { grid-template-columns:1fr; }
+  .cohort-plot { min-width:640px; }
+}
+
 </style>
 </head>
 <body class="mode-analysis">
@@ -296,6 +378,20 @@ svg.chart { width: 100%; height: 210px; display: block; }
         <div class="kpi-grid" id="kpiGrid"></div>
       </section>
 
+
+      <section class="panel fade-target" id="cohortInsightPanel">
+        <div class="subsection-title"><span>条件に合う試合の見え方</span><span class="footer-note">左の条件だけで更新 / 棒を選んで Ctrl+C でコピー</span></div>
+        <div class="chart-legend" id="cohortLegend"></div>
+        <div class="bar-summary-grid" id="cohortBarStats"></div>
+        <div class="cohort-bar-wrap">
+          <div class="chart-empty" id="cohortBarEmpty" hidden>条件に合う試合がありません。</div>
+          <div class="cohort-tooltip" id="cohortTooltip" hidden></div>
+          <div class="cohort-bar-scroller">
+            <div class="cohort-bar-chart" id="cohortBarChart"></div>
+          </div>
+        </div>
+      </section>
+
       <section class="grid-2">
         <section class="panel fade-target" id="similarPanel">
           <h3 class="subsection-title"><span>近い試合</span><span class="footer-note" id="tierLabel"></span></h3>
@@ -329,6 +425,23 @@ svg.chart { width: 100%; height: 210px; display: block; }
         </section>
       </section>
 
+
+      <section class="section-grid-2">
+        <section class="panel fade-target" id="heatmapPanel">
+          <div class="subsection-title"><span>年×月ヒートマップ</span><span class="footer-note">平均より高い月ほど目立たせる</span></div>
+          <div class="heatmap-wrap" id="heatmapWrap"></div>
+        </section>
+        <section class="panel fade-target" id="anomalyPanel">
+          <div class="subsection-title"><span>異常値モード</span><span class="footer-note">平均との差が大きい試合を先に見る</span></div>
+          <div class="anomaly-toolbar">
+            <button type="button" class="mini-btn" data-anomaly-mode="all">すべて</button>
+            <button type="button" class="mini-btn" data-anomaly-mode="up">上振れ</button>
+            <button type="button" class="mini-btn" data-anomaly-mode="down">下振れ</button>
+          </div>
+          <div class="anomaly-grid" id="anomalyGrid"></div>
+        </section>
+      </section>
+
       <section class="grid-2">
         <section class="panel fade-target" id="detailPanel">
           <h3 class="subsection-title">
@@ -342,7 +455,7 @@ svg.chart { width: 100%; height: 210px; display: block; }
             <table>
               <thead>
                 <tr>
-                  <th>ID</th><th>日付</th><th>相手</th><th>観客数</th><th>キックオフ</th><th>タグ</th><th>メモ</th>
+                  <th>ID</th><th>日付</th><th>相手</th><th>観客数</th><th>平均との差</th><th>キックオフ</th><th>タグ</th><th>気づき</th>
                 </tr>
               </thead>
               <tbody id="cohortTableBody"></tbody>
@@ -365,6 +478,12 @@ svg.chart { width: 100%; height: 210px; display: block; }
           </div>
         </section>
       </section>
+
+      <section class="panel fade-target" id="matrixPanel">
+        <div class="subsection-title"><span>掛け合わせマトリクス</span><span class="footer-note">条件の組み合わせでどこが強いかを見る</span></div>
+        <div class="matrix-stack" id="matrixStack"></div>
+      </section>
+
     </div>
 
     <div id="pagePower" class="page-section panel-stack" hidden>
@@ -791,6 +910,7 @@ function updateActiveChips(target) {
   if (state.gwOnly) chips.push('GWのみ');
   if (state.summerOnly) chips.push('夏休みのみ');
   if (state.tagSearch.trim()) chips.push(`タグ: ${state.tagSearch.trim()}`);
+  chips.push(`対象: ${target.opponent_std}`);
   $('activeChips').innerHTML = chips.map(c=>`<span class="chip active">${c}</span>`).join('');
 }
 
@@ -827,7 +947,7 @@ function renderSimilar(target, similarBundle) {
 
 function renderCohortTable(cohort) {
   $('cohortLabel').textContent = `${cohort.length}件を表示中`;
-  $('cohortTableBody').innerHTML = cohort.slice().sort((a,b)=>b.match_date.localeCompare(a.match_date)).map(r => `
+  $('cohortTableBody').innerHTML = cohort.slice().sort((a,b)=>b.match_date.localeCompare(a.match_date)).slice(0,50).map(r => `
     <tr>
       <td>${r.app_match_id}</td>
       <td>${jpDate(r.match_date)}</td>
@@ -839,11 +959,9 @@ function renderCohortTable(cohort) {
     </tr>`).join('');
 }
 
-
 function sanitizeTsvCell(value) {
   return String(value ?? '').replace(/\t/g, ' ').replace(/\r?\n/g, ' ');
 }
-
 
 function buildCohortTsv(rows) {
   const header = ['ID','日付','曜日区分','相手','相手集客力','会場','観客数','キックオフ','デー/ナイト','キーゲーム','GoGoReds!デー','配布','タグ','メモ'];
@@ -1001,14 +1119,13 @@ function refresh() {
   panels.forEach(id => $(id).classList.add('updating'));
   requestAnimationFrame(() => {
     const target = targetRow();
-    const allFilterRows = applyFilters(DATA.filter(d => state.includeCovid || !isCovidEra(d)));
     const pool = applyFilters(historicalPool(target));
     const similarBundle = tierMatches(target, pool);
     const cohort = similarBundle.pick.length ? similarBundle.pick : pool;
-    latestCohortRows = allFilterRows.slice();
+    latestCohortRows = cohort.slice();
     const narratives = buildNarratives(target, cohort, similarBundle);
 
-    $('heroTitle').textContent = `${target.opponent_std} 戦`;
+    $('heroTitle').textContent = `${target.opponent_std} 戦の見立て`;
     $('heroSub').textContent = `${target.app_match_id} / ${jpDate(target.match_date)} / ${target.venue_std} / ${target.kickoff_time || '時刻未入力'} / ${inferredDayType(target)} / ${target.day_night || '時間帯未入力'} / 相手集客力 ${drawPowerOf(target)}`;
     $('heroTags').innerHTML = [
       `<span class="tiny-badge red">${target.app_match_id}</span>`,
@@ -1030,7 +1147,7 @@ function refresh() {
 
     buildKpis(target, narratives, cohort);
     renderSimilar(target, similarBundle);
-    renderCohortTable(allFilterRows);
+    renderCohortTable(cohort);
     renderMeeting(target, narratives, similarBundle, cohort);
     drawLineChart($('trendChart'), yearlySeries(cohort));
     drawHistogram($('histChart'), cohort.map(r => Number(r.attendance)).filter(Number.isFinite));
@@ -1194,9 +1311,533 @@ function bind() {
   document.querySelectorAll('#pageNav [data-page]').forEach(btn => btn.addEventListener('click', () => switchPage(btn.dataset.page)));
 }
 
+
+state.anomalyMode = state.anomalyMode || 'all';
+let latestFilteredRows = [];
+let latestSelectedBarRow = null;
+let latestBarRowsById = new Map();
+
+function getFilteredRows() {
+  return applyFilters(DATA.filter(d => state.includeCovid || !isCovidEra(d)));
+}
+
+function getContextRows() {
+  return DATA.filter(d => {
+    if (!state.includeCovid && isCovidEra(d)) return false;
+    if (state.rangePreset !== 'all' && state.rangePreset !== 'current') {
+      const years = Number(state.rangePreset);
+      if (Number(d.season) < maxSeason - years + 1) return false;
+    }
+    if (state.rangePreset === 'current' && Number(d.season) !== maxSeason) return false;
+    if (state.j1Mode === 'J1のみ' && d.j1_family_mode_detail !== 'J1リーグ') return false;
+    if (state.j1Mode === '百年構想のみ' && d.j1_family_mode_detail !== 'J1百年構想リーグ') return false;
+    return true;
+  });
+}
+
+function stddev(values) {
+  const arr = values.filter(v => Number.isFinite(v));
+  if (!arr.length) return NaN;
+  const avg = mean(arr);
+  return Math.sqrt(arr.reduce((sum, v) => sum + ((v - avg) ** 2), 0) / arr.length);
+}
+
+function summarizeRows(rows) {
+  const values = rows.map(r => Number(r.attendance)).filter(Number.isFinite);
+  const avg = mean(values);
+  const med = median(values);
+  const min = values.length ? Math.min(...values) : NaN;
+  const max = values.length ? Math.max(...values) : NaN;
+  const std = stddev(values);
+  const q1 = quantile(values, 0.25);
+  const q3 = quantile(values, 0.75);
+  const scale = Math.max(std || 0, ((q3 - q1) || 0) * 0.9, 1200);
+  return { values, avg, med, min, max, std, q1, q3, scale };
+}
+
+function signedFmtInt(v) {
+  if (!Number.isFinite(v)) return '—';
+  const rounded = Math.round(v);
+  return `${rounded > 0 ? '+' : ''}${rounded.toLocaleString('ja-JP')}`;
+}
+
+function deltaTone(delta, scale) {
+  if (!Number.isFinite(delta)) return 'neutral';
+  if (delta >= scale) return 'up-strong';
+  if (delta >= scale * 0.35) return 'up';
+  if (delta <= -scale) return 'down-strong';
+  if (delta <= -scale * 0.35) return 'down';
+  return 'neutral';
+}
+
+function htmlEscape(str) {
+  return String(str ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+function rowTags(row) {
+  return [Number(row.gogoreds_day_flag)===1?'GoGo':'', Number(row.distribution_flag)===1?'配布':'', Number(row.key_game_flag)===1?'キー':'', row.tags||''].filter(Boolean).join(' / ') || '—';
+}
+
+function buildInsightReason(row, stats) {
+  const attendance = Number(row.attendance);
+  const delta = attendance - stats.avg;
+  const cues = [];
+  if (Number(row.key_game_flag) === 1) cues.push('キーゲーム');
+  if (Number(row.gogoreds_day_flag) === 1) cues.push('GoGo');
+  if (Number(row.distribution_flag) === 1) cues.push('配布');
+  if (inferredDayType(row) === '土日') cues.push('土日');
+  if (drawPowerOf(row) === '強') cues.push('強カード');
+  if (drawPowerOf(row) === '弱') cues.push('弱カード');
+  if ((row.venue_category || '') === '埼スタ') cues.push('埼スタ');
+  const tone = deltaTone(delta, stats.scale);
+  const toneLabel = tone.startsWith('up') ? '上振れ' : (tone.startsWith('down') ? '下振れ' : '標準域');
+  return `${toneLabel}。平均との差 ${signedFmtInt(delta)}人。${cues.length ? cues.join('・') : '大きな特徴なし'}。`;
+}
+
+function buildBarCopyText(row, stats) {
+  const delta = Number(row.attendance) - stats.avg;
+  return [
+    `ID: ${row.app_match_id}`,
+    `日付: ${jpDate(row.match_date)}`,
+    `相手: ${row.opponent_std}`,
+    `観客数: ${fmtInt(Number(row.attendance))}人`,
+    `平均との差: ${signedFmtInt(delta)}人`,
+    `会場: ${row.venue_std || row.venue_category || '—'}`,
+    `土日/平日: ${inferredDayType(row)}`,
+    `デー/ナイト: ${row.day_night || '—'}`,
+    `相手集客力: ${drawPowerOf(row)}`,
+    `タグ: ${rowTags(row)}`,
+    `気づき: ${buildInsightReason(row, stats)}`
+  ].join('\n');
+}
+
+function renderCohortBarPanel(rows) {
+  const legend = $('cohortLegend');
+  const statsWrap = $('cohortBarStats');
+  const chart = $('cohortBarChart');
+  const empty = $('cohortBarEmpty');
+  const tooltip = $('cohortTooltip');
+  const rowsSorted = rows.slice().sort((a,b)=>a.match_date.localeCompare(b.match_date));
+  latestBarRowsById = new Map();
+  rowsSorted.forEach(r => latestBarRowsById.set(String(r.match_id), r));
+
+  if (!rowsSorted.length) {
+    legend.innerHTML = '';
+    statsWrap.innerHTML = '';
+    chart.innerHTML = '';
+    empty.hidden = false;
+    tooltip.hidden = true;
+    latestSelectedBarRow = null;
+    return;
+  }
+  empty.hidden = true;
+  const stats = summarizeRows(rowsSorted);
+  const contextStats = summarizeRows(getContextRows());
+  statsWrap.innerHTML = [
+    ['対象試合', `${rowsSorted.length}件`],
+    ['条件平均', `${fmtInt(stats.avg)}人`],
+    ['期間平均', `${fmtInt(contextStats.avg)}人`],
+    ['IQR', `${fmtInt(stats.q1)} - ${fmtInt(stats.q3)}人`]
+  ].map(([label, value]) => `<div class="bar-summary-card"><div class="eyebrow">${label}</div><div class="value">${value}</div></div>`).join('');
+  legend.innerHTML = [
+    ['上振れ大', 'up'],
+    ['やや上振れ', 'high'],
+    ['下振れ', 'down']
+  ].map(([label, cls]) => `<span class="legend-chip"><span class="legend-dot ${cls}"></span>${label}</span>`).join('') +
+  `<span class="legend-chip"><span class="legend-line"></span>条件平均</span><span class="legend-chip"><span class="legend-line secondary"></span>期間平均</span><span class="copy-hint">棒をホバー/クリックして Ctrl+C でコピー</span>`;
+
+  const domainMax = Math.max(stats.max || 0, contextStats.avg || 0, stats.avg || 0, 1);
+  const plotHeight = 250;
+  const avgBottom = ((stats.avg || 0) / domainMax) * plotHeight;
+  const contextBottom = ((contextStats.avg || 0) / domainMax) * plotHeight;
+
+  chart.innerHTML = `
+    <div class="cohort-plot" style="height:${plotHeight + 44}px;">
+      <div class="cohort-line" style="bottom:${avgBottom + 24}px;"><span>条件平均 ${fmtInt(stats.avg)}人</span></div>
+      <div class="cohort-line secondary" style="bottom:${contextBottom + 24}px;"><span>期間平均 ${fmtInt(contextStats.avg)}人</span></div>
+      <div class="cohort-bars">
+        ${rowsSorted.map((row, idx) => {
+          const att = Number(row.attendance);
+          const height = Math.max(10, Math.round((att / domainMax) * plotHeight));
+          const tone = deltaTone(att - stats.avg, stats.scale);
+          const title = `${jpDate(row.match_date)} ${row.opponent_std} ${fmtInt(att)}人`;
+          return `<button type="button" class="cohort-bar ${tone}" data-match-id="${row.match_id}" data-index="${idx}" aria-label="${htmlEscape(title)}" title="${htmlEscape(title)}" style="height:${height}px;"></button>`;
+        }).join('')}
+      </div>
+      <div class="cohort-axis-labels">
+        ${rowsSorted.map(row => `<span>${String(new Date(row.match_date + 'T00:00:00').getFullYear()).slice(-2)}/${new Date(row.match_date + 'T00:00:00').getMonth()+1}</span>`).join('')}
+      </div>
+    </div>`;
+
+  const placeTooltip = (event, row) => {
+    const rect = chart.getBoundingClientRect();
+    const x = event.clientX - rect.left + 14;
+    const y = event.clientY - rect.top - 12;
+    const delta = Number(row.attendance) - stats.avg;
+    const tone = deltaTone(delta, stats.scale);
+    tooltip.innerHTML = `
+      <div style="font-size:13px;font-weight:800;">${row.app_match_id} / ${jpDate(row.match_date)}</div>
+      <div style="margin-top:3px;">${row.opponent_std} / ${fmtInt(Number(row.attendance))}人</div>
+      <div style="margin-top:7px;"><span class="delta-chip ${tone}">平均との差 ${signedFmtInt(delta)}人</span></div>
+      <div class="small" style="margin-top:7px;">${row.venue_std || row.venue_category || '—'} / ${inferredDayType(row)} / ${row.day_night || '—'} / 集客力 ${drawPowerOf(row)}</div>
+      <div class="small" style="margin-top:6px;">${rowTags(row)}</div>
+      <div class="small" style="margin-top:7px;">${buildInsightReason(row, stats)}</div>`;
+    tooltip.hidden = false;
+    tooltip.style.left = `${Math.max(8, Math.min(x, chart.clientWidth - 300))}px`;
+    tooltip.style.top = `${Math.max(8, y - 120)}px`;
+  };
+
+  chart.querySelectorAll('.cohort-bar').forEach(btn => {
+    btn.addEventListener('mouseenter', e => {
+      const row = latestBarRowsById.get(String(btn.dataset.matchId));
+      if (!row) return;
+      latestSelectedBarRow = row;
+      chart.querySelectorAll('.cohort-bar').forEach(el => el.classList.toggle('is-active', el === btn));
+      placeTooltip(e, row);
+    });
+    btn.addEventListener('mousemove', e => {
+      const row = latestBarRowsById.get(String(btn.dataset.matchId));
+      if (!row) return;
+      placeTooltip(e, row);
+    });
+    btn.addEventListener('mouseleave', () => {
+      tooltip.hidden = true;
+    });
+    btn.addEventListener('click', e => {
+      const row = latestBarRowsById.get(String(btn.dataset.matchId));
+      if (!row) return;
+      latestSelectedBarRow = row;
+      chart.querySelectorAll('.cohort-bar').forEach(el => el.classList.toggle('is-active', el === btn));
+      placeTooltip(e, row);
+    });
+  });
+
+  if (!latestSelectedBarRow || !latestBarRowsById.has(String(latestSelectedBarRow.match_id))) {
+    latestSelectedBarRow = rowsSorted[rowsSorted.length - 1];
+  }
+}
+
+function renderHeatmap(rows) {
+  const host = $('heatmapWrap');
+  if (!rows.length) {
+    host.innerHTML = '<div class="chart-empty">条件に合う試合がありません。</div>';
+    return;
+  }
+  const stats = summarizeRows(rows);
+  const years = [...new Set(rows.map(r => Number(r.year)).filter(Number.isFinite))].sort((a,b)=>b-a);
+  const months = Array.from({length:12}, (_,i)=>i+1);
+  const grouped = new Map();
+  rows.forEach(row => {
+    const key = `${row.year}-${row.month}`;
+    if (!grouped.has(key)) grouped.set(key, []);
+    grouped.get(key).push(Number(row.attendance));
+  });
+  host.innerHTML = `
+    <table class="heatmap-table">
+      <thead><tr><th>年</th>${months.map(m=>`<th>${m}月</th>`).join('')}</tr></thead>
+      <tbody>
+        ${years.map(year => `<tr><th>${year}</th>${months.map(month => {
+          const vals = grouped.get(`${year}-${month}`) || [];
+          if (!vals.length) return `<td><div class="heatmap-cell neutral"><div class="month-val">—</div><div class="month-meta">0件</div></div></td>`;
+          const avg = mean(vals);
+          const tone = deltaTone(avg - stats.avg, stats.scale);
+          return `<td><div class="heatmap-cell ${tone}"><div class="month-val">${fmtInt(avg)}</div><div class="month-meta">${vals.length}件</div></div></td>`;
+        }).join('')}</tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function renderAnomalies(rows) {
+  const host = $('anomalyGrid');
+  const buttons = document.querySelectorAll('[data-anomaly-mode]');
+  buttons.forEach(btn => btn.classList.toggle('active', btn.dataset.anomalyMode === state.anomalyMode));
+  if (!rows.length) {
+    host.innerHTML = '<div class="chart-empty">条件に合う試合がありません。</div>';
+    return;
+  }
+  const stats = summarizeRows(rows);
+  let items = rows.map(row => {
+    const delta = Number(row.attendance) - stats.avg;
+    return { row, delta, tone: deltaTone(delta, stats.scale), reason: buildInsightReason(row, stats) };
+  });
+  if (state.anomalyMode === 'up') items = items.filter(item => item.delta > 0).sort((a,b)=>b.delta-a.delta).slice(0,8);
+  else if (state.anomalyMode === 'down') items = items.filter(item => item.delta < 0).sort((a,b)=>a.delta-b.delta).slice(0,8);
+  else items = items.sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta)).slice(0,8);
+  host.innerHTML = items.map(item => `
+    <article class="anomaly-card ${item.tone}">
+      <div class="tagrow">
+        <span class="tiny-badge red">${item.row.app_match_id}</span>
+        <span class="tiny-badge">${jpDate(item.row.match_date)}</span>
+        <span class="delta-chip ${item.tone}">${signedFmtInt(item.delta)}人</span>
+      </div>
+      <div style="font-size:18px;font-weight:800;">${item.row.opponent_std}</div>
+      <div style="font-size:24px;font-weight:800;line-height:1;">${fmtInt(Number(item.row.attendance))}人</div>
+      <div class="reason-inline">${item.reason}</div>
+    </article>`).join('') || '<div class="chart-empty">該当する試合がありません。</div>';
+}
+
+function buildMatrixCard(rows, config, overallStats) {
+  const { title, rowValues, colValues, rowLabel, colLabel } = config;
+  return `
+    <section class="matrix-card">
+      <h4>${title}</h4>
+      <div style="overflow:auto;">
+        <table class="matrix-table">
+          <thead><tr><th></th>${colValues.map(v=>`<th>${v}</th>`).join('')}</tr></thead>
+          <tbody>
+            ${rowValues.map(rVal => `<tr><th>${rVal}</th>${colValues.map(cVal => {
+              const subset = rows.filter(row => rowLabel(row) === rVal && colLabel(row) === cVal);
+              if (!subset.length) return `<td><div class="matrix-cell neutral"><div class="main">—</div><div class="sub">0件</div></div></td>`;
+              const avg = mean(subset.map(row => Number(row.attendance)));
+              const tone = deltaTone(avg - overallStats.avg, overallStats.scale);
+              return `<td><div class="matrix-cell ${tone}"><div class="main">${fmtInt(avg)}人</div><div class="sub">${subset.length}件</div></div></td>`;
+            }).join('')}</tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </section>`;
+}
+
+function renderMatrixPanel(rows) {
+  const host = $('matrixStack');
+  if (!rows.length) {
+    host.innerHTML = '<div class="chart-empty">条件に合う試合がありません。</div>';
+    return;
+  }
+  const overallStats = summarizeRows(rows);
+  const configs = [
+    {
+      title: '相手集客力 × 土日/平日',
+      rowValues: ['強','中','弱'],
+      colValues: ['土日','平日'],
+      rowLabel: row => drawPowerOf(row),
+      colLabel: row => inferredDayType(row)
+    },
+    {
+      title: 'キーゲーム × 配布',
+      rowValues: ['キーあり','キーなし'],
+      colValues: ['配布あり','配布なし'],
+      rowLabel: row => Number(row.key_game_flag)===1 ? 'キーあり' : 'キーなし',
+      colLabel: row => Number(row.distribution_flag)===1 ? '配布あり' : '配布なし'
+    },
+    {
+      title: '会場 × デー/ナイト',
+      rowValues: uniq(rows.map(row => row.venue_category || row.venue_std)).sort((a,b)=>a.localeCompare(b,'ja')),
+      colValues: ['デー','ナイト','未入力'],
+      rowLabel: row => row.venue_category || row.venue_std,
+      colLabel: row => row.day_night || '未入力'
+    }
+  ];
+  host.innerHTML = configs.map(config => buildMatrixCard(rows, config, overallStats)).join('');
+}
+
+function updateActiveChips() {
+  const chips = [];
+  const presetLabels = {current:'今季', '3':'直近3年', '5':'直近5年', '10':'直近10年', all:'全期間'};
+  chips.push(`期間: ${presetLabels[state.rangePreset]}`);
+  if (state.venue !== 'all') chips.push(`会場: ${state.venue}`);
+  if (state.opponents.length) chips.push(`相手: ${formatOpponentSelection()}`);
+  if (state.dayType !== 'all') chips.push(state.dayType);
+  if (state.dayNight !== 'all') chips.push(state.dayNight);
+  if (state.keyGameOnly) chips.push('キーゲームのみ');
+  if (state.includeCovid) chips.push('コロナ禍含む');
+  if (state.j1Mode !== 'all' && state.j1Mode !== '統合') chips.push(state.j1Mode);
+  if (state.drawPower !== 'all') chips.push(`集客力: ${state.drawPower}`);
+  if (state.kickoffSlot !== 'all') chips.push(`時刻帯: ${state.kickoffSlot}`);
+  if (state.gogoOnly) chips.push('GoGoのみ');
+  if (state.distributionOnly) chips.push('配布ありのみ');
+  if (state.gwOnly) chips.push('GWのみ');
+  if (state.summerOnly) chips.push('夏休みのみ');
+  if (state.tagSearch.trim()) chips.push(`タグ: ${state.tagSearch.trim()}`);
+  $('activeChips').innerHTML = chips.map(c=>`<span class="chip active">${c}</span>`).join('');
+}
+
+function buildKpis(target, narratives, cohortRows) {
+  const stats = summarizeRows(cohortRows);
+  const conf = confidenceLabel(cohortRows.length);
+  const diffVsActual = Number.isFinite(Number(target.attendance)) ? narratives.predBlend - Number(target.attendance) : NaN;
+  const spread = Number.isFinite(stats.std) ? `標準偏差 ${fmtInt(stats.std)}人。` : '';
+  const items = [
+    { title:'来場見込み', value: `${fmtInt(narratives.predBlend)}人`, meta: `類似試合中央値とモデル予測をブレンド。${Number.isFinite(diffVsActual) ? `実績との差は${fmtInt(Math.abs(diffVsActual))}人${diffVsActual>0?'高め':'低め'}。` : '対象が将来試合でもそのまま使える構造。'}`, cls:'primary' },
+    { title:'条件一致の試合', value: `${cohortRows.length}件`, meta: `左の条件だけで抽出。信頼感は「${conf[1]}」。`, cls:'' },
+    { title:'条件平均', value: `${fmtInt(stats.avg)}人`, meta: `現在の左条件に合う試合の平均。${spread}`, cls:'' },
+    { title:'中央値', value: `${fmtInt(stats.med)}人`, meta: '外れ値に引っ張られにくい基準。', cls:'' },
+    { title:'最大 / 最小', value: `${fmtInt(stats.max)} / ${fmtInt(stats.min)}`, meta: '上下の振れ幅から例外条件を探せます。', cls:'' },
+  ];
+  $('kpiGrid').innerHTML = items.map(item => `<div class="kpi ${item.cls}"><div class="eyebrow">${item.title}</div><div class="value">${item.value}</div><div class="meta">${item.meta}</div></div>`).join('');
+}
+
+function renderSimilar(target, similarBundle) {
+  const top = similarBundle.pick.slice(0,3);
+  const tierText = `${similarBundle.tier} / 厳密${similarBundle.strictCount}件・拡張${similarBundle.expandedCount}件・広域${similarBundle.broadCount}件`;
+  const filteredStats = summarizeRows(latestFilteredRows.length ? latestFilteredRows : similarBundle.pick);
+  $('tierLabel').textContent = tierText;
+  $('similarCards').innerHTML = top.map(r => {
+    const delta = Number(r.attendance) - Number(target.attendance || 0);
+    const deltaClass = delta > 0 ? 'metric-up' : (delta < 0 ? 'metric-down' : 'metric-neutral');
+    const filteredDelta = Number(r.attendance) - filteredStats.avg;
+    const filteredTone = deltaTone(filteredDelta, filteredStats.scale);
+    return `<article class="match-card"><div class="tagrow"><span class="tiny-badge red">${r.app_match_id}</span><span class="tiny-badge">${jpDate(r.match_date)}</span><span class="tiny-badge">${r.venue_std}</span><span class="tiny-badge">集客力 ${drawPowerOf(r)}</span><span class="delta-chip ${filteredTone}">条件差 ${signedFmtInt(filteredDelta)}人</span></div><div style="font-size:20px;font-weight:800;line-height:1.2;">${r.opponent_std}</div><div style="display:flex;justify-content:space-between;gap:12px;align-items:baseline;"><div style="font-size:30px;font-weight:800;letter-spacing:-.03em;">${fmtInt(r.attendance)}</div><div class="${deltaClass}">${Number.isFinite(delta) ? (delta>0?'+':'') + fmtInt(delta) + '人' : '—'}</div></div><div class="reason-inline">${buildInsightReason(r, filteredStats)}</div><ul class="reason-list">${r.reasons.map(x=>`<li>${x}</li>`).join('')}</ul></article>`;
+  }).join('');
+  $('similarTableBody').innerHTML = similarBundle.pick.slice(0,12).map(r => {
+    const delta = Number(r.attendance) - Number(target.attendance || 0);
+    const deltaStr = Number.isFinite(delta) ? `${delta>0?'+':''}${fmtInt(delta)}人` : '—';
+    const filteredDelta = Number(r.attendance) - filteredStats.avg;
+    return `<tr><td>${r.app_match_id}</td><td>${jpDate(r.match_date)}</td><td>${r.opponent_std}</td><td>${fmtInt(r.attendance)}<div class="reason-inline">条件差 ${signedFmtInt(filteredDelta)}人</div></td><td>${[inferredDayType(r),r.day_night, '集客力 ' + drawPowerOf(r), Number(r.key_game_flag)===1?'キー':'通常'].filter(Boolean).join(' / ')}</td><td>${fmt1(r.score)}</td><td>${deltaStr}</td></tr>`;
+  }).join('');
+}
+
+function renderCohortTable(rows) {
+  const stats = summarizeRows(rows);
+  $('cohortLabel').textContent = `${rows.length}件を表示中 / 平均 ${fmtInt(stats.avg)}人`;
+  $('cohortTableBody').innerHTML = rows.slice().sort((a,b)=>b.match_date.localeCompare(a.match_date)).map(r => {
+    const attendance = Number(r.attendance);
+    const delta = attendance - stats.avg;
+    const tone = deltaTone(delta, stats.scale);
+    const width = stats.max ? Math.max(6, (attendance / stats.max) * 100) : 0;
+    return `
+      <tr>
+        <td>${r.app_match_id}</td>
+        <td>${jpDate(r.match_date)}</td>
+        <td>${r.opponent_std}<div class="footer-note">集客力 ${drawPowerOf(r)}</div></td>
+        <td>
+          <div class="table-metric">
+            <div style="font-weight:800;">${fmtInt(attendance)}</div>
+            <div class="attendance-bar"><span style="width:${width}%;"></span></div>
+          </div>
+        </td>
+        <td><span class="delta-chip ${tone}">${signedFmtInt(delta)}人</span></td>
+        <td>${r.kickoff_time || '—'} / ${r.day_night || '—'}</td>
+        <td>${rowTags(r)}</td>
+        <td class="reason-inline">${buildInsightReason(r, stats)}</td>
+      </tr>`;
+  }).join('') || '<tr><td colspan="8">該当する試合がありません。</td></tr>';
+}
+
+function buildCohortTsv(rows) {
+  const stats = summarizeRows(rows);
+  const header = ['ID','日付','曜日区分','相手','相手集客力','会場','観客数','平均との差','キックオフ','デー/ナイト','キーゲーム','GoGoReds!デー','配布','タグ','気づき'];
+  const body = rows
+    .slice()
+    .sort((a,b)=>b.match_date.localeCompare(a.match_date))
+    .map(r => [
+      r.app_match_id,
+      jpDate(r.match_date),
+      inferredDayType(r),
+      r.opponent_std || '',
+      drawPowerOf(r),
+      r.venue_std || r.venue_category || '',
+      Number.isFinite(Number(r.attendance)) ? Math.round(Number(r.attendance)) : '',
+      Number.isFinite(Number(r.attendance)) ? Math.round(Number(r.attendance) - stats.avg) : '',
+      r.kickoff_time || '',
+      r.day_night || '',
+      Number(r.key_game_flag) === 1 ? '1' : '0',
+      Number(r.gogoreds_day_flag) === 1 ? '1' : '0',
+      Number(r.distribution_flag) === 1 ? '1' : '0',
+      rowTags(r),
+      buildInsightReason(r, stats)
+    ].map(sanitizeTsvCell).join('\t'));
+  return [header.join('\t'), ...body].join('\n');
+}
+
+function refresh() {
+  const panels = ['heroPanel','kpiPanel','cohortInsightPanel','similarPanel','chartPanel','heatmapPanel','anomalyPanel','detailPanel','meetingPanel','matrixPanel'];
+  panels.forEach(id => $(id) && $(id).classList.add('updating'));
+  requestAnimationFrame(() => {
+    const target = targetRow();
+    const filteredRows = getFilteredRows();
+    latestFilteredRows = filteredRows.slice();
+    latestCohortRows = filteredRows.slice();
+
+    const pool = applyFilters(historicalPool(target));
+    const similarBundle = tierMatches(target, pool);
+    const narrativeRows = similarBundle.pick.length ? similarBundle.pick : pool;
+    const narratives = buildNarratives(target, narrativeRows, similarBundle);
+
+    $('heroTitle').textContent = `${target.opponent_std} 戦の分析`;
+    $('heroSub').textContent = `${target.app_match_id} / ${jpDate(target.match_date)} / ${target.venue_std} / ${target.kickoff_time || '時刻未入力'} / ${inferredDayType(target)} / ${target.day_night || '時間帯未入力'} / 相手集客力 ${drawPowerOf(target)}`;
+    $('heroTags').innerHTML = [
+      `<span class="tiny-badge red">${target.app_match_id}</span>`,
+      `<span class="tiny-badge red">${target.j1_family_mode_detail}</span>`,
+      `<span class="tiny-badge">${target.venue_category}</span>`,
+      `<span class="tiny-badge">相手集客力: ${drawPowerOf(target)}</span>`,
+      Number(target.key_game_flag)===1 ? `<span class="tiny-badge amber">キーゲーム</span>` : `<span class="tiny-badge">通常枠</span>`,
+      Number(target.gogoreds_day_flag)===1 ? `<span class="tiny-badge green">GoGoReds!デー</span>` : '',
+      Number(target.distribution_flag)===1 ? `<span class="tiny-badge green">配布あり</span>` : ''
+    ].filter(Boolean).join('');
+    $('heroSummary').textContent = narratives.summary + ' ' + narratives.caveat;
+    $('heroCounter').textContent = narratives.counter;
+    $('predMain').textContent = `${fmtInt(narratives.predBlend)}人`;
+    const actual = Number(target.attendance);
+    $('predSub').textContent = Number.isFinite(actual) ? `実績 ${fmtInt(actual)}人` : '予測専用';
+    const conf = confidenceLabel(filteredRows.length);
+    $('confidenceWrap').innerHTML = `<span class="confidence ${conf[0]}">${conf[1]}</span>`;
+    $('predExplain').textContent = `モデル予測 ${fmtInt(narratives.predModel)}人 / 類似試合中央値 ${fmtInt(narratives.med)}人 / ブレンド表示。`;
+
+    buildKpis(target, narratives, filteredRows);
+    renderCohortBarPanel(filteredRows);
+    renderSimilar(target, similarBundle);
+    renderCohortTable(filteredRows);
+    renderMeeting(target, narratives, similarBundle, filteredRows);
+    drawLineChart($('trendChart'), yearlySeries(filteredRows));
+    drawHistogram($('histChart'), filteredRows.map(r => Number(r.attendance)).filter(Number.isFinite));
+    $('factorsList').innerHTML = factorInsights(target, pool).map(txt => `<li>${txt}</li>`).join('');
+    renderHeatmap(filteredRows);
+    renderAnomalies(filteredRows);
+    renderMatrixPanel(filteredRows);
+    updateActiveChips();
+    renderPowerPage();
+    renderCampaignPage();
+    updatePageView();
+
+    panels.forEach(id => $(id) && $(id).classList.remove('updating'));
+  });
+}
+
+function bindInsightEvents() {
+  if (window.__insightEventsBound) return;
+  window.__insightEventsBound = true;
+
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('[data-anomaly-mode]');
+    if (!btn) return;
+    state.anomalyMode = btn.dataset.anomalyMode;
+    renderAnomalies(latestFilteredRows);
+  });
+
+  document.addEventListener('keydown', async e => {
+    if (!(e.ctrlKey || e.metaKey) || String(e.key).toLowerCase() !== 'c') return;
+    const activeTag = document.activeElement && document.activeElement.tagName ? document.activeElement.tagName.toLowerCase() : '';
+    if (activeTag === 'input' || activeTag === 'textarea' || window.getSelection()?.toString()) return;
+    if (!latestSelectedBarRow) return;
+    const stats = summarizeRows(latestFilteredRows);
+    const text = buildBarCopyText(latestSelectedBarRow, stats);
+    try {
+      await navigator.clipboard.writeText(text);
+      const hint = $('cohortLegend');
+      if (hint) {
+        const old = hint.dataset.flashText || '';
+        hint.dataset.flashText = hint.innerHTML;
+        hint.innerHTML = `${hint.innerHTML}<span class="legend-chip">コピー済み: ${latestSelectedBarRow.app_match_id}</span>`;
+        setTimeout(() => {
+          if (hint.dataset.flashText) {
+            hint.innerHTML = hint.dataset.flashText;
+            delete hint.dataset.flashText;
+          }
+        }, 1200);
+      }
+      e.preventDefault();
+    } catch(err) {
+      console.error(err);
+    }
+  });
+}
+
+
 buildOptions();
 syncControls();
 bind();
+bindInsightEvents();
 updateQuickActive();
 refresh();
 </script>
