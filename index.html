@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="data:," />
 <title>浦和レッズ ホームゲーム来場分析アプリ</title>
 <style>
 :root {
@@ -840,9 +841,7 @@ function renderCohortTable(cohort) {
 }
 
 function sanitizeTsvCell(value) {
-  return String(value ?? '').replace(/	/g, ' ').replace(/
-?
-/g, ' ');
+  return String(value ?? '').replace(/\t/g, ' ').replace(/\r?\n/g, ' ');
 }
 
 function buildCohortTsv(rows) {
