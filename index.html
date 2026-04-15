@@ -342,36 +342,7 @@ svg.chart { width: 100%; height: 210px; display: block; }
     </section>
 
     <div id="pageDashboard" class="page-section panel-stack">
-      <section class="panel hero fade-target" id="heroPanel">
-        <div class="hero-head">
-          <div>
-            <div class="hero-kicker">今回見る試合</div>
-            <h2 id="heroTitle"></h2>
-            <p class="hero-sub" id="heroSub"></p>
-          </div>
-          <div class="target-select">
-            <div class="label">対象試合を選ぶ</div>
-            <select id="targetMatchSelect"></select>
-          </div>
-        </div>
-        <div class="hero-grid">
-          <div class="hero-card">
-            <div class="hero-kicker">試合の輪郭</div>
-            <div class="mini-chips" id="heroTags"></div>
-            <div class="hero-note" id="heroSummary"></div>
-            <div class="counter-note" id="heroCounter"></div>
-          </div>
-          <div class="prediction-card">
-            <div class="hero-kicker">来場見込み</div>
-            <div class="statline">
-              <div class="big" id="predMain"></div>
-              <div class="subbig" id="predSub"></div>
-            </div>
-            <div id="confidenceWrap"></div>
-            <div class="footer-note" id="predExplain"></div>
-          </div>
-        </div>
-      </section>
+      
 
       <section class="panel fade-target" id="kpiPanel">
         <div class="subsection-title"><span>まず押さえる5つ</span><span class="meeting-only footer-note">会議ではここだけでも話せる</span></div>
@@ -685,8 +656,10 @@ function confidenceLabel(n) {
 
 function buildOptions() {
   const targetSelect = $('targetMatchSelect');
-  targetSelect.innerHTML = allTargets.map(d => `<option value="${d.match_id}">[${d.app_match_id}] ${jpDate(d.match_date)} ${d.opponent_std}［${drawPowerOf(d)}］ / ${d.venue_std}</option>`).join('');
-  targetSelect.value = state.targetId;
+  if (targetSelect) {
+    targetSelect.innerHTML = allTargets.map(d => `<option value="${d.match_id}">[${d.app_match_id}] ${jpDate(d.match_date)} ${d.opponent_std}［${drawPowerOf(d)}］ / ${d.venue_std}</option>`).join('');
+    targetSelect.value = state.targetId;
+  }
 
   const rangeOpts = [
     ['current','今季'],['3','直近3年'],['5','直近5年'],['10','直近10年'],['all','全期間']
@@ -1115,7 +1088,7 @@ function renderCampaignPage() {
 }
 
 function refresh() {
-  const panels = ['heroPanel','kpiPanel','similarPanel','chartPanel','detailPanel','meetingPanel'];
+  const panels = ['kpiPanel','similarPanel','chartPanel','detailPanel','meetingPanel'];
   panels.forEach(id => $(id).classList.add('updating'));
   requestAnimationFrame(() => {
     const target = targetRow();
@@ -1125,25 +1098,6 @@ function refresh() {
     latestCohortRows = cohort.slice();
     const narratives = buildNarratives(target, cohort, similarBundle);
 
-    $('heroTitle').textContent = `${target.opponent_std} 戦の見立て`;
-    $('heroSub').textContent = `${target.app_match_id} / ${jpDate(target.match_date)} / ${target.venue_std} / ${target.kickoff_time || '時刻未入力'} / ${inferredDayType(target)} / ${target.day_night || '時間帯未入力'} / 相手集客力 ${drawPowerOf(target)}`;
-    $('heroTags').innerHTML = [
-      `<span class="tiny-badge red">${target.app_match_id}</span>`,
-      `<span class="tiny-badge red">${target.j1_family_mode_detail}</span>`,
-      `<span class="tiny-badge">${target.venue_category}</span>`,
-      `<span class="tiny-badge">相手集客力: ${drawPowerOf(target)}</span>`,
-      Number(target.key_game_flag)===1 ? `<span class="tiny-badge amber">キーゲーム</span>` : `<span class="tiny-badge">通常枠</span>`,
-      Number(target.gogoreds_day_flag)===1 ? `<span class="tiny-badge green">GoGoReds!デー</span>` : '',
-      Number(target.distribution_flag)===1 ? `<span class="tiny-badge green">配布あり</span>` : ''
-    ].filter(Boolean).join('');
-    $('heroSummary').textContent = narratives.summary + ' ' + narratives.caveat;
-    $('heroCounter').textContent = narratives.counter;
-    $('predMain').textContent = `${fmtInt(narratives.predBlend)}人`;
-    const actual = Number(target.attendance);
-    $('predSub').textContent = Number.isFinite(actual) ? `実績 ${fmtInt(actual)}人` : '予測専用';
-    const conf = confidenceLabel(cohort.length);
-    $('confidenceWrap').innerHTML = `<span class="confidence ${conf[0]}">${conf[1]}</span>`;
-    $('predExplain').textContent = `モデル予測 ${fmtInt(narratives.predModel)}人 / 類似試合中央値 ${fmtInt(narratives.med)}人 / ブレンド表示。`;
 
     buildKpis(target, narratives, cohort);
     renderSimilar(target, similarBundle);
@@ -1211,7 +1165,7 @@ function updateQuickActive() {
 }
 
 function bind() {
-  $('targetMatchSelect').addEventListener('change', e => { state.targetId = e.target.value; refresh(); });
+  if ($('targetMatchSelect')) $('targetMatchSelect').addEventListener('change', e => { state.targetId = e.target.value; refresh(); });
   $('rangePreset').addEventListener('change', e => { state.rangePreset = e.target.value; refresh(); updateQuickActive(); });
   $('venueFilter').addEventListener('change', e => { state.venue = e.target.value; refresh(); });
   $('dayTypeFilter').addEventListener('change', e => { state.dayType = e.target.value; refresh(); });
@@ -1741,7 +1695,7 @@ function buildCohortTsv(rows) {
 }
 
 function refresh() {
-  const panels = ['heroPanel','kpiPanel','cohortInsightPanel','similarPanel','chartPanel','heatmapPanel','anomalyPanel','detailPanel','meetingPanel','matrixPanel'];
+  const panels = ['kpiPanel','cohortInsightPanel','similarPanel','chartPanel','heatmapPanel','anomalyPanel','detailPanel','meetingPanel','matrixPanel'];
   panels.forEach(id => $(id) && $(id).classList.add('updating'));
   requestAnimationFrame(() => {
     const target = targetRow();
@@ -1753,26 +1707,6 @@ function refresh() {
     const similarBundle = tierMatches(target, pool);
     const narrativeRows = similarBundle.pick.length ? similarBundle.pick : pool;
     const narratives = buildNarratives(target, narrativeRows, similarBundle);
-
-    $('heroTitle').textContent = `${target.opponent_std} 戦の分析`;
-    $('heroSub').textContent = `${target.app_match_id} / ${jpDate(target.match_date)} / ${target.venue_std} / ${target.kickoff_time || '時刻未入力'} / ${inferredDayType(target)} / ${target.day_night || '時間帯未入力'} / 相手集客力 ${drawPowerOf(target)}`;
-    $('heroTags').innerHTML = [
-      `<span class="tiny-badge red">${target.app_match_id}</span>`,
-      `<span class="tiny-badge red">${target.j1_family_mode_detail}</span>`,
-      `<span class="tiny-badge">${target.venue_category}</span>`,
-      `<span class="tiny-badge">相手集客力: ${drawPowerOf(target)}</span>`,
-      Number(target.key_game_flag)===1 ? `<span class="tiny-badge amber">キーゲーム</span>` : `<span class="tiny-badge">通常枠</span>`,
-      Number(target.gogoreds_day_flag)===1 ? `<span class="tiny-badge green">GoGoReds!デー</span>` : '',
-      Number(target.distribution_flag)===1 ? `<span class="tiny-badge green">配布あり</span>` : ''
-    ].filter(Boolean).join('');
-    $('heroSummary').textContent = narratives.summary + ' ' + narratives.caveat;
-    $('heroCounter').textContent = narratives.counter;
-    $('predMain').textContent = `${fmtInt(narratives.predBlend)}人`;
-    const actual = Number(target.attendance);
-    $('predSub').textContent = Number.isFinite(actual) ? `実績 ${fmtInt(actual)}人` : '予測専用';
-    const conf = confidenceLabel(filteredRows.length);
-    $('confidenceWrap').innerHTML = `<span class="confidence ${conf[0]}">${conf[1]}</span>`;
-    $('predExplain').textContent = `モデル予測 ${fmtInt(narratives.predModel)}人 / 類似試合中央値 ${fmtInt(narratives.med)}人 / ブレンド表示。`;
 
     buildKpis(target, narratives, filteredRows);
     renderCohortBarPanel(filteredRows);
