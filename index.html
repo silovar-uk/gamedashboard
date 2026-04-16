@@ -227,6 +227,27 @@ svg.chart { width: 100%; height: 210px; display: block; }
   line-height: 1.55;
 }
 
+.chart-scroll { position: relative; }
+.cohort-bar-tooltip {
+  position: fixed;
+  z-index: 2000;
+  min-width: 240px;
+  max-width: 320px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(17,24,39,.96);
+  color: #f9fafb;
+  box-shadow: 0 14px 34px rgba(15,23,42,.28);
+  border: 1px solid rgba(255,255,255,.08);
+  pointer-events: none;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.cohort-bar-tooltip[hidden] { display:none !important; }
+.cohort-bar-tooltip__title { font-weight: 800; font-size: 13px; margin-bottom: 4px; }
+.cohort-bar-tooltip__meta { color: rgba(249,250,251,.86); }
+.cohort-bar-tooltip__sub { color: rgba(249,250,251,.72); }
+
 </style>
   <link rel="icon" href="data:,">
 </head>
@@ -326,6 +347,7 @@ svg.chart { width: 100%; height: 210px; display: block; }
         </div>
         <div class="chart-scroll">
           <svg id="cohortBarChart" viewBox="0 0 1200 320" preserveAspectRatio="xMinYMin meet" aria-label="条件に当てはまる試合の棒グラフ"></svg>
+          <div class="cohort-bar-tooltip" id="cohortBarTooltip" hidden></div>
         </div>
         <div class="bar-note" id="cohortBarNote">左の条件に当てはまる試合をすべて時系列で表示します。ホバーで試合情報を確認できます。</div>
       </section>
@@ -765,6 +787,7 @@ function fullFilteredMatches() {
 }
 
 function drawCohortBarChart(el, rows) {
+  const tooltipEl = document.getElementById('cohortBarTooltip');
   const W = Math.max(1200, rows.length * 22 + 120);
   const H = 320;
   const M = { t: 24, r: 18, b: 74, l: 60 };
@@ -773,6 +796,7 @@ function drawCohortBarChart(el, rows) {
   el.setAttribute('height', String(H));
   if (!rows.length) {
     el.innerHTML = '';
+    if (tooltipEl) tooltipEl.hidden = true;
     return;
   }
 
@@ -809,16 +833,21 @@ function drawCohortBarChart(el, rows) {
   const bars = sorted.map((r, i) => {
     const val = Number(r.attendance) || 0;
     const yy = y(val);
-    const tooltip = [
-      `${r.app_match_id || r.match_id}`,
-      `${jpDate(r.match_date)} ${r.opponent_std}`,
-      `${fmtInt(val)}人 / ${r.venue_std}`,
-      `${inferredDayType(r)} / ${r.day_night || '不明'} / 相手集客力 ${drawPowerOf(r)}`
-    ].join(' | ');
+    const info = {
+      id: r.app_match_id || r.match_id || '—',
+      date: jpDate(r.match_date),
+      opponent: r.opponent_std || '—',
+      attendance: `${fmtInt(val)}人`,
+      venue: r.venue_std || '—',
+      dayType: inferredDayType(r),
+      dayNight: r.day_night || '不明',
+      drawPower: drawPowerOf(r),
+      competition: r.competition_name_std || r.competition_group_detail || '—'
+    };
+    const encoded = encodeURIComponent(JSON.stringify(info));
     return `
-      <g>
+      <g class="cohort-bar-group" data-info="${encoded}">
         <rect class="cohort-bar" x="${x(i)}" y="${yy}" width="${barW}" height="${H - M.b - yy}" rx="3"></rect>
-        <title>${tooltip}</title>
       </g>
     `;
   }).join('');
@@ -832,6 +861,48 @@ function drawCohortBarChart(el, rows) {
     </g>
     ${bars}
   `;
+
+  const showTooltip = (evt, info) => {
+    if (!tooltipEl) return;
+    tooltipEl.innerHTML = `
+      <div class="cohort-bar-tooltip__title">${info.date} ${info.opponent}</div>
+      <div class="cohort-bar-tooltip__meta">${info.attendance} / ${info.venue}</div>
+      <div class="cohort-bar-tooltip__sub">${info.competition}</div>
+      <div class="cohort-bar-tooltip__sub">${info.dayType} / ${info.dayNight} / 相手集客力 ${info.drawPower}</div>
+      <div class="cohort-bar-tooltip__sub">試合ID: ${info.id}</div>
+    `;
+    const offset = 14;
+    tooltipEl.style.left = `${evt.clientX + offset}px`;
+    tooltipEl.style.top = `${evt.clientY + offset}px`;
+    tooltipEl.hidden = false;
+  };
+
+  const moveTooltip = (evt) => {
+    if (!tooltipEl || tooltipEl.hidden) return;
+    const offset = 14;
+    tooltipEl.style.left = `${evt.clientX + offset}px`;
+    tooltipEl.style.top = `${evt.clientY + offset}px`;
+  };
+
+  const hideTooltip = () => {
+    if (tooltipEl) tooltipEl.hidden = true;
+  };
+
+  el.querySelectorAll('.cohort-bar-group').forEach(node => {
+    const raw = node.getAttribute('data-info');
+    if (!raw) return;
+    let info;
+    try {
+      info = JSON.parse(decodeURIComponent(raw));
+    } catch (e) {
+      return;
+    }
+    node.addEventListener('mouseenter', evt => showTooltip(evt, info));
+    node.addEventListener('mousemove', moveTooltip);
+    node.addEventListener('mouseleave', hideTooltip);
+    node.addEventListener('focus', evt => showTooltip(evt, info));
+    node.addEventListener('blur', hideTooltip);
+  });
 }
 
 function jpDateShort(dateStr) {
