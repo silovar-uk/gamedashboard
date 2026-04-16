@@ -189,7 +189,15 @@ svg.chart { width: 100%; height: 210px; display: block; }
   background: white;
   padding: 12px;
 }
-.chart-scroll svg { display:block; min-height: 320px; }
+.chart-scroll svg { display:block; }
+#cohortBarChart {
+  display: block;
+  height: 320px;
+  width: auto;
+  min-width: 100%;
+  overflow: visible;
+}
+
 .bar-grid line {
   stroke: #eef1f6;
   stroke-dasharray: 4 4;
@@ -317,7 +325,7 @@ svg.chart { width: 100%; height: 210px; display: block; }
           <span class="info-pill">点線 = 3万人 / 4万人 / 5万人の目安</span>
         </div>
         <div class="chart-scroll">
-          <svg class="chart" id="cohortBarChart" viewBox="0 0 1200 320" preserveAspectRatio="none"></svg>
+          <svg id="cohortBarChart" viewBox="0 0 1200 320" preserveAspectRatio="xMinYMin meet" aria-label="条件に当てはまる試合の棒グラフ"></svg>
         </div>
         <div class="bar-note" id="cohortBarNote">左の条件に当てはまる試合をすべて時系列で表示します。ホバーで試合情報を確認できます。</div>
       </section>
@@ -761,6 +769,8 @@ function drawCohortBarChart(el, rows) {
   const H = 320;
   const M = { t: 24, r: 18, b: 74, l: 60 };
   el.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  el.setAttribute('width', String(W));
+  el.setAttribute('height', String(H));
   if (!rows.length) {
     el.innerHTML = '';
     return;
