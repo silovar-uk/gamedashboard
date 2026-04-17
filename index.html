@@ -266,6 +266,7 @@ svg.chart { width: 100%; height: 210px; display: block; }
   </aside>
 
   <main class="main">
+    <!-- default widened to all years / all venues so 1990s-era matches in current RAW_DATA are visible on load -->
     <section class="panel">
       <div class="page-nav" id="pageNav">
         <button class="btn active" data-page="dashboard">ダッシュボード</button>
@@ -494,8 +495,8 @@ const state = {
   mode: 'analysis',
   page: 'dashboard',
   targetId: null,
-  rangePreset: '10',
-  venue: '埼スタ',
+  rangePreset: 'all',
+  venue: 'all',
   opponents: [],
   opponentSearch: '',
   dayType: 'all',
@@ -1227,8 +1228,8 @@ function bind() {
     renderPowerPage();
   });
   $('resetBtn').addEventListener('click', () => {
-    state.rangePreset = '10';
-    state.venue='埼スタ';
+    state.rangePreset = 'all';
+    state.venue='all';
     state.opponents=[];
     state.opponentSearch='';
     state.dayType='all';
