@@ -140,21 +140,6 @@ svg.chart { width: 100%; height: 210px; display: block; }
   .hero-grid, .grid-2 { grid-template-columns: 1fr; }
   .kpi-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
 }
-
-#heroPanel { display: none !important; }
-
-
-.cohort-bars-wrap { overflow-x: auto; overflow-y: hidden; }
-.cohort-bars-wrap svg { display:block; height: 320px; width: auto; min-width: 100%; }
-.cohort-bars-empty { color: var(--muted); font-size: 13px; padding: 18px 6px; }
-.cohort-bar { fill: rgba(35,88,212,.78); }
-.cohort-bar.key { fill: rgba(215,25,32,.78); }
-.cohort-bar.gogo { fill: rgba(25,135,84,.78); }
-.cohort-grid-line { stroke: #d7dde8; stroke-dasharray: 4 4; }
-.cohort-axis-line { stroke: #c9d1dd; }
-.cohort-axis-label { fill: #697283; font-size: 11px; }
-.cohort-x-label { fill: #7a8498; font-size: 10px; }
-
 @media (max-width: 860px) {
   .app { grid-template-columns: 1fr; }
   .sidebar { position: static; height: auto; }
@@ -266,7 +251,6 @@ svg.chart { width: 100%; height: 210px; display: block; }
   </aside>
 
   <main class="main">
-    <!-- default widened to all years / all venues so 1990s-era matches in current RAW_DATA are visible on load -->
     <section class="panel">
       <div class="page-nav" id="pageNav">
         <button class="btn active" data-page="dashboard">ダッシュボード</button>
@@ -310,16 +294,6 @@ svg.chart { width: 100%; height: 210px; display: block; }
       <section class="panel fade-target" id="kpiPanel">
         <div class="subsection-title"><span>まず押さえる5つ</span><span class="meeting-only footer-note">会議ではここだけでも話せる</span></div>
         <div class="kpi-grid" id="kpiGrid"></div>
-      </section>
-
-
-      <section class="panel fade-target" id="cohortBarsPanel">
-        <div class="subsection-title"><span>条件に当てはまる試合の棒グラフ</span><span class="footer-note" id="cohortBarsLabel"></span></div>
-        <div class="chart-box">
-          <div class="cohort-bars-wrap" id="cohortBarsWrap">
-            <div id="cohortBarsMount"></div>
-          </div>
-        </div>
       </section>
 
       <section class="grid-2">
@@ -495,8 +469,8 @@ const state = {
   mode: 'analysis',
   page: 'dashboard',
   targetId: null,
-  rangePreset: 'all',
-  venue: 'all',
+  rangePreset: '10',
+  venue: '埼スタ',
   opponents: [],
   opponentSearch: '',
   dayType: 'all',
@@ -817,6 +791,7 @@ function updateActiveChips(target) {
   if (state.gwOnly) chips.push('GWのみ');
   if (state.summerOnly) chips.push('夏休みのみ');
   if (state.tagSearch.trim()) chips.push(`タグ: ${state.tagSearch.trim()}`);
+  chips.push(`対象: ${target.opponent_std}`);
   $('activeChips').innerHTML = chips.map(c=>`<span class="chip active">${c}</span>`).join('');
 }
 
@@ -851,72 +826,6 @@ function renderSimilar(target, similarBundle) {
   }).join('');
 }
 
-
-function drawCohortBars(el, cohort) {
-  const rows = cohort.slice().sort((a,b)=>a.match_date.localeCompare(b.match_date));
-  $('cohortBarsLabel').textContent = `${rows.length}試合`;
-  if (!rows.length) {
-    el.innerHTML = '<div class="cohort-bars-empty">該当試合なし</div>';
-    return;
-  }
-
-  const H = 320;
-  const M = { t: 18, r: 20, b: 42, l: 56 };
-  const barW = 16;
-  const gap = 6;
-  const plotW = rows.length * (barW + gap);
-  const W = Math.max(920, M.l + M.r + plotW);
-  const plotH = H - M.t - M.b;
-
-  const values = rows.map(r => Number(r.attendance)).filter(Number.isFinite);
-  const rawMax = values.length ? Math.max(...values) : 0;
-  const maxY = Math.max(50000, Math.ceil(rawMax / 10000) * 10000);
-
-  const y = v => M.t + plotH * (1 - (v / maxY));
-  const x = i => M.l + i * (barW + gap);
-
-  const guideVals = [];
-  for (let v = 20000; v <= maxY; v += 10000) guideVals.push(v);
-
-  const guides = guideVals.map(v => `
-    <line class="cohort-grid-line" x1="${M.l}" y1="${y(v)}" x2="${W - M.r}" y2="${y(v)}"></line>
-    <text class="cohort-axis-label" x="${M.l - 8}" y="${y(v) + 4}" text-anchor="end">${Math.round(v / 10000)}万人</text>
-  `).join('');
-
-  const axis = `
-    <line class="cohort-axis-line" x1="${M.l}" y1="${H - M.b}" x2="${W - M.r}" y2="${H - M.b}"></line>
-    <line class="cohort-axis-line" x1="${M.l}" y1="${M.t}" x2="${M.l}" y2="${H - M.b}"></line>
-  `;
-
-  const labelStep = Math.max(1, Math.ceil(rows.length / 18));
-
-  const bars = rows.map((r, i) => {
-    const v = Number(r.attendance) || 0;
-    const h = Math.max(0, (H - M.b) - y(v));
-    const cls = Number(r.gogoreds_day_flag) === 1 ? 'cohort-bar gogo' : (Number(r.key_game_flag) === 1 ? 'cohort-bar key' : 'cohort-bar');
-    const showLabel = i % labelStep === 0 || i === rows.length - 1;
-    const label = showLabel ? `<text class="cohort-x-label" x="${x(i) + barW/2}" y="${H - 14}" text-anchor="middle">${new Date(r.match_date).getMonth()+1}/${new Date(r.match_date).getDate()}</text>` : '';
-    const tip = `${jpDate(r.match_date)} / ${r.opponent_std} / ${fmtInt(r.attendance)}人 / ${r.venue_std}`;
-    return `
-      <g>
-        <rect class="${cls}" x="${x(i)}" y="${y(v)}" width="${barW}" height="${h}" rx="4">
-          <title>${tip}</title>
-        </rect>
-        ${label}
-      </g>
-    `;
-  }).join('');
-
-  el.innerHTML = `
-    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMinYMin meet" aria-label="条件に当てはまる試合の棒グラフ">
-      ${guides}
-      ${axis}
-      ${bars}
-    </svg>
-  `;
-}
-
-
 function renderCohortTable(cohort) {
   $('cohortLabel').textContent = `${cohort.length}件を表示中`;
   $('cohortTableBody').innerHTML = cohort.slice().sort((a,b)=>b.match_date.localeCompare(a.match_date)).map(r => `
@@ -932,7 +841,8 @@ function renderCohortTable(cohort) {
 }
 
 function sanitizeTsvCell(value) {
-  return String(value ?? '').replace(/\t/g, ' ').replace(/\r?\n/g, ' ');
+  return String(value ?? '').replace(/	/g, ' ').replace(/?
+/g, ' ');
 }
 
 function buildCohortTsv(rows) {
@@ -1087,7 +997,7 @@ function renderCampaignPage() {
 }
 
 function refresh() {
-  const panels = ['heroPanel','kpiPanel','cohortBarsPanel','similarPanel','chartPanel','detailPanel','meetingPanel'];
+  const panels = ['heroPanel','kpiPanel','similarPanel','chartPanel','detailPanel','meetingPanel'];
   panels.forEach(id => $(id).classList.add('updating'));
   requestAnimationFrame(() => {
     const target = targetRow();
@@ -1118,7 +1028,6 @@ function refresh() {
     $('predExplain').textContent = `モデル予測 ${fmtInt(narratives.predModel)}人 / 類似試合中央値 ${fmtInt(narratives.med)}人 / ブレンド表示。`;
 
     buildKpis(target, narratives, cohort);
-    drawCohortBars($('cohortBarsMount'), cohort);
     renderSimilar(target, similarBundle);
     renderCohortTable(cohort);
     renderMeeting(target, narratives, similarBundle, cohort);
@@ -1228,8 +1137,8 @@ function bind() {
     renderPowerPage();
   });
   $('resetBtn').addEventListener('click', () => {
-    state.rangePreset = 'all';
-    state.venue='all';
+    state.rangePreset = '10';
+    state.venue='埼スタ';
     state.opponents=[];
     state.opponentSearch='';
     state.dayType='all';
