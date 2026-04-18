@@ -841,8 +841,7 @@ function renderCohortTable(cohort) {
 }
 
 function sanitizeTsvCell(value) {
-  return String(value ?? '').replace(/	/g, ' ').replace(/?
-/g, ' ');
+  return String(value ?? '').replace(/\t/g, ' ').replace(/\r?\n/g, ' ');
 }
 
 function buildCohortTsv(rows) {
